@@ -87,5 +87,43 @@ def run_pipeline(topic):
     print("=" * 50)
     print(result["final"])
 
-topic = input("Enter a topic: ")
-run_pipeline(topic)
+import gradio as gr
+
+def gradio_pipeline(topic):
+    if not topic.strip():
+        return "", "", "", ""
+    
+    result = app.invoke({
+        "topic": topic,
+        "research": "",
+        "article": "",
+        "feedback": "",
+        "final": ""
+    })
+    
+    return result["research"], result["article"], result["feedback"], result["final"]
+
+with gr.Blocks(title="Multi-Agent Pipeline") as ui:
+    gr.Markdown("# Multi-Agent Research & Writing Pipeline")
+    gr.Markdown("Enter a topic and watch 4 AI agents collaborate to produce a polished article.")
+    
+    topic_input = gr.Textbox(label="Topic", placeholder="e.g. AI in Healthcare")
+    run_btn = gr.Button("Run Pipeline", variant="primary")
+    
+    with gr.Tabs():
+        with gr.Tab("Research"):
+            research_out = gr.Markdown()
+        with gr.Tab("Draft Article"):
+            article_out = gr.Markdown()
+        with gr.Tab("Critic Feedback"):
+            feedback_out = gr.Markdown()
+        with gr.Tab("Final Article"):
+            final_out = gr.Markdown()
+    
+    run_btn.click(
+        fn=gradio_pipeline,
+        inputs=[topic_input],
+        outputs=[research_out, article_out, feedback_out, final_out]
+    )
+
+ui.launch()
